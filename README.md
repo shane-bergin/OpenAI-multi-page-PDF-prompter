@@ -1,0 +1,1 @@
+Keep all files in the same directory, including your intended PDF you wish to send along to OpenAI. The script will send a PDF of any page length to OpenAI API. You need only change the system and prompt text in quotes to make use of this. Also, the .pdf file name you intend to work with. 
