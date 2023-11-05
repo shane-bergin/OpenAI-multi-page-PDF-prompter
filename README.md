@@ -17,4 +17,4 @@ run in terminal:
 $ chmod 777 pdfprompt.py
 
 
-The text of your OpenAI API key should be in the open_ai file. 
+The text of your OpenAI API key should be in the openai_key file. 
