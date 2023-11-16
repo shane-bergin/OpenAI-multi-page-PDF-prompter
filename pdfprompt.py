@@ -22,6 +22,7 @@ def main():
     parser.add_argument('--pdf_path', type=str, default=f"{root_path}/your_file.pdf")
     parser.add_argument('--system_prompt', type=str, default="You are a summarization assistant.")
     parser.add_argument('--user_prompt', type=str, default="Summarize the following text")
+    parser.add_argument('--import_dir', type=str, default=f'{root_path}')
 
     args = parser.parse_args()
 
@@ -35,8 +36,32 @@ def handle(args):
     pdf_path = args.pdf_path
     system_prompt = args.system_prompt
     user_prompt = args.user_prompt
+    import_dir = args.import_dir
 
-    text = read_pdf(pdf_path)
+    file_contents = []
+
+    #iterate over all files in directory
+    for root, subdirs, files in os.walk(import_dir):
+        for file in files:
+            # do conditional extension check here
+            file = os.path.join(root, file)
+            # if pdf file, read it
+            if file.endswith('.pdf'):
+                try:
+                    text = read_pdf(file)
+                    file_contents.append(text)
+                except Exception as e:
+                    print(e)
+            else:
+                try:
+                    with open(file, 'r') as f:
+                        all_txt = re.sub(r'(\s)\s+', r'\1', f.read()) 
+                        file_contents.append(all_txt)
+                except Exception as e:
+                    print(e)
+
+    # text = read_pdf(pdf_path)
+    text = ' '.join(file_contents)
 
     if text:
         summarized_text = summarize_text_with_openai(text, chunk_len=chunk_len, temperature=temperature, context_filter=context_filter, return_file=return_file, system_prompt=system_prompt, user_prompt=user_prompt)
