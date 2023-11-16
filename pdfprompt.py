@@ -20,6 +20,8 @@ def main():
     parser.add_argument('--context_filter', type=str, default=None)
     parser.add_argument('--return_file', type=str, default=f"{root_path}/summarized.txt")
     parser.add_argument('--pdf_path', type=str, default=f"{root_path}/your_file.pdf")
+    parser.add_argument('--system_prompt', type=str, default="You are a summarization assistant.")
+    parser.add_argument('--user_prompt', type=str, default="Summarize the following text")
 
     args = parser.parse_args()
 
@@ -31,11 +33,13 @@ def handle(args):
     context_filter = args.context_filter
     return_file = args.return_file
     pdf_path = args.pdf_path
+    system_prompt = args.system_prompt
+    user_prompt = args.user_prompt
 
     text = read_pdf(pdf_path)
-    
+
     if text:
-        summarized_text = summarize_text_with_openai(text, chunk_len=chunk_len, temperature=temperature, context_filter=context_filter, return_file=return_file)
+        summarized_text = summarize_text_with_openai(text, chunk_len=chunk_len, temperature=temperature, context_filter=context_filter, return_file=return_file, system_prompt=system_prompt, user_prompt=user_prompt)
         print(summarized_text)
     else:
         print("Failed to extract text from the PDF.")
@@ -47,7 +51,7 @@ def read_pdf(file_path):
             text += page.get_text()
     return text
 
-def summarize_text_with_openai(text, chunk_len=2000, temperature=0.2,context_filter=None, return_file=f"{root_path}/summarized.txt"):
+def summarize_text_with_openai(text, chunk_len=2000, temperature=0.2,context_filter=None, return_file=f"{root_path}/summarized.txt", system_prompt="You are a summarization assistant.", user_prompt="Summarize the following text"):
     prompt_chunks = [text[i:i + chunk_len] for i in range(0, len(text), chunk_len)]
     summarized_text = ""
     context_filter_arr = context_filter.split(',') if context_filter else None
@@ -57,8 +61,8 @@ def summarize_text_with_openai(text, chunk_len=2000, temperature=0.2,context_fil
             response = openai.ChatCompletion.create(
                 model="gpt-4",
                 messages=[
-                    {"role": "system", "content": "You are a summarization assistant."},
-                    {"role": "user", "content": f"Summarize the following text:\n{chunk}"}
+                    {"role": "system", "content": f"{system_prompt}"},
+                    {"role": "user", "content": f"{user_prompt}:\n{chunk}"}
                 ],
                 max_tokens=min(4096, chunk_len),
                 temperature=temperature
