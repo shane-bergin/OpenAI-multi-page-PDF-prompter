@@ -1,14 +1,44 @@
 import openai
 import fitz  # PyMuPDF
 import os
+import argparse
+import sys
 
 root_path = os.path.abspath(os.path.dirname(__name__))
 
 # Path to file containing API key
-api_key_file_path = "openai_key"
+api_key_file_path = f"{root_path}/openai_key"
 
 with open(api_key_file_path, 'r') as f:
     openai.api_key = f.read().strip()
+
+def main():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--chunk_len', type=str, default='2000')
+    parser.add_argument('--temperature', type=str, default='0.2')
+    parser.add_argument('--context_filter', type=str, default=None)
+    parser.add_argument('--return_file', type=str, default=f"{root_path}/summarized.txt")
+    parser.add_argument('--pdf_path', type=str, default=f"{root_path}/your_file.pdf")
+
+    args = parser.parse_args()
+
+    handle(args)
+
+def handle(args):
+    chunk_len = int(args.chunk_len)
+    temperature = float(args.temperature)
+    context_filter = args.context_filter
+    return_file = args.return_file
+    pdf_path = args.pdf_path
+
+    text = read_pdf(pdf_path)
+    
+    if text:
+        summarized_text = summarize_text_with_openai(text, chunk_len=chunk_len, temperature=temperature, context_filter=context_filter, return_file=return_file)
+        print(summarized_text)
+    else:
+        print("Failed to extract text from the PDF.")
 
 def read_pdf(file_path):
     text = ""
@@ -40,10 +70,7 @@ def summarize_text_with_openai(text, chunk_len=2000, temperature=0.2,context_fil
         f.write(summarized_text)
     return summarized_text
 
-pdf_path = "your_file.pdf"
-text = read_pdf(pdf_path)
-if text:
-    summarized_text = summarize_text_with_openai(text)
-    print(summarized_text)
-else:
-    print("Failed to extract text from the PDF.")
+
+
+if __name__ == '__main__':
+    main()
