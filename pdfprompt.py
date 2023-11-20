@@ -3,6 +3,7 @@ import fitz  # PyMuPDF
 import os
 import argparse
 import sys
+import re
 
 root_path = os.path.abspath(os.path.dirname(__name__))
 
